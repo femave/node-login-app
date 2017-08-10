@@ -16,7 +16,8 @@ app.use(bodyParser.json())
 
 app.use(cookieSession({
   name: 'cookieEatCookies',
-  keys: ['palabraClaveSuperSecretaNUmber1', 'YEstaEsOTRApalabraSuperSecret']
+  keys: ['palabraClaveSuperSecretaNUmber1', 'YEstaEsOTRApalabraSuperSecret'],
+  maxAge: 24 * 60 * 60 * 1000
 }))
 
 app.use( function(req, res, next) {
@@ -36,7 +37,7 @@ app.get('/', (req,res) => {
 })
 
 app.get('/home', (req,res) => {
-	req.session.loggin === undefined ? res.redirect('/') : res.render('pages/home') 
+	req.session.loggin === undefined ? res.redirect('/') : res.render('pages/home', {user:req.session.loggin}) 
 })
 
 app.get('/error', (req,res) => {
@@ -53,7 +54,7 @@ app.post('/register-user',(req, res) => {
     let content = data.split('\r\n')
     const email = req.body.email
 		const password = req.body.password
-		let emailPas = '\r' + email + ':' + password
+		let emailPas = '\r\n' + email + ':' + password
 		
     let match = content.some(function(item){
     	let [emailDB, passwordDB] = item.split(':')
@@ -64,7 +65,7 @@ app.post('/register-user',(req, res) => {
     	fs.appendFileSync('./data/data.txt', emailPas);
     	res.redirect('/')
     }else{
-    	res.redirect('/error')
+    	res.redirect('/register');    	
     }
 	})
 })
@@ -81,6 +82,7 @@ app.post('/log-in', (req,res)=>{
     	let userLog = emailDB === email && passwordDB === password
     	return userLog
     })
+    console.log(content)
     
     if(match === true){
     	req.session.loggin = {emailDB:email, passwordDB:password}
